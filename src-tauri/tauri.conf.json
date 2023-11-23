@@ -36,6 +36,11 @@
     "updater": {
       "active": false
     },
+    "systemTray": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true,
+      "title": "Quick Window"
+    },
     "windows": [
       {
         "fullscreen": false,
