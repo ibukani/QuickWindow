@@ -5,7 +5,7 @@ use tauri::SystemTray;
 
 fn main() {
     let system_tray = SystemTray::new();
-    
+
     tauri::Builder::default()
         .system_tray(system_tray)
         .run(tauri::generate_context!())
