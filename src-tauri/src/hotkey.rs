@@ -27,7 +27,7 @@ impl InputManager {
                 *process_lock = 0;
 
                 if timestamp_lock.elapsed().as_secs() < 1 {
-                    // macrgo function
+                    println!("double tap!");
                 }
             }
         });
