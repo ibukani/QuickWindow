@@ -1,4 +1,4 @@
-use inputbot::handle_input_events;
+use inputbot::KeybdKey::*;
 
 pub struct InputManager {}
 
@@ -7,9 +7,9 @@ impl InputManager {
         return Self {};
     }
 
-    pub fn init(&self) {        
-
-        handle_input_events();
+    pub fn init(&self) {
+        inputbot::handle_input_events();
         // initialize hoykey
     }
 }
+
