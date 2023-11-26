@@ -10,6 +10,8 @@ fn main() {
     let manager = InputManager::new();
     manager.init();
 
+    println!("build ing");
+
     let system_tray = SystemTray::new();
 
     tauri::Builder::default()
