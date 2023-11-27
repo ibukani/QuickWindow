@@ -20,7 +20,6 @@ use winsafe::{self as w, prelude::*};
 
 pub fn run_window(pid: u32) {
     let target_hwnd = Arc::new(Mutex::new(w::HWND::NULL));
-    let count = Arc::new(Mutex::new(0));
 
     let _ = w::EnumWindows(|hwnd| -> bool {
         if hwnd.GetWindowThreadProcessId().1 == pid {
@@ -31,7 +30,6 @@ pub fn run_window(pid: u32) {
                 hwnd.IsWindowEnabled()
             );
             let mut target_hwnd_lock = target_hwnd.lock().unwrap();
-            let mut count_lock = count.lock().unwrap();
             println!(
                 "text: {}, bool: {}",
                 hwnd.GetWindowText().unwrap(),
@@ -41,14 +39,14 @@ pub fn run_window(pid: u32) {
             //active_window(&hwnd);
             //}
             //bring_window(&hwnd);
-            if *count_lock == 0 && hwnd.IsWindowVisible() {
+            if hwnd.IsWindowVisible() {
                 println!("enumtext: {}", hwnd.GetWindowText().unwrap(),);
 
                 //active_window(&hwnd);
                 //bring_window(&hwnd);
 
                 *target_hwnd_lock = hwnd;
-                *count_lock = 1;
+                //*count_lock = 1;
             }
         }
 
