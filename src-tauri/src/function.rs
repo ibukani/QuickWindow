@@ -1,19 +1,18 @@
-enum Feature {
-    Application(),
-    Sentence(),
-}
+pub mod feature;
 
-struct Function {
-    macro_type: MacroType,
+use feature::Feature;
+
+pub struct Function {
+    feature: Feature,
 }
 
 impl Function {
-    pub fn new(feature: feature) -> Self {
+    pub fn new(feature: Feature) -> Self {
         Self { feature }
     }
 
-    pub fn perform() {
-        match macro_type {}
+    pub fn perform(&self) {
+        self.feature.execute()
     }
 }
 
