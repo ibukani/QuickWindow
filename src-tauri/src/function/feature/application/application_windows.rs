@@ -1,161 +1,63 @@
-use std::{
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::sync::{Arc, Mutex};
 
-use async_std::task::sleep;
-use w::{
-    co::{HWND_PLACE, LSFW, SW, SWP},
-    AllowSetForegroundWindow, AttachThreadInput, GetCurrentThreadId, HwndFocus,
-};
-use windows::Win32::{
-    Foundation::HWND,
-    System::Console::{AllocConsole, FreeConsole, GetConsoleWindow},
-    UI::WindowsAndMessaging::{
-        GetForegroundWindow, GetWindowTextW, SetWindowPos, ASFW_ANY, HWND_TOP, LSFW_LOCK,
-        SWP_NOZORDER, WM_SETFOCUS,
-    },
-};
+use w::co::{HWND_PLACE, SW, SWP};
 use winsafe::{self as w, prelude::*};
 
-pub fn run_window(pid: u32) {
+pub fn start_window() {}
+
+pub fn switch_window(pid: u32) {
     let target_hwnd = Arc::new(Mutex::new(w::HWND::NULL));
 
+    // pidからメインのウィンドウを取得する
     let _ = w::EnumWindows(|hwnd| -> bool {
-        if hwnd.GetWindowThreadProcessId().1 == pid {
-            println!(
-                "pid: {}, pid2: {}, window {}",
-                pid,
-                hwnd.GetWindowThreadProcessId().1,
-                hwnd.IsWindowEnabled()
-            );
+        if hwnd.GetWindowThreadProcessId().1 == pid && hwnd.IsWindowVisible() {
             let mut target_hwnd_lock = target_hwnd.lock().unwrap();
-            println!(
-                "text: {}, bool: {}",
-                hwnd.GetWindowText().unwrap(),
-                hwnd.IsWindowVisible()
-            );
-            //if hwnd.GetWindowText().unwrap().contains("Default IME") {
-            //active_window(&hwnd);
-            //}
-            //bring_window(&hwnd);
-            if hwnd.IsWindowVisible() {
-                println!("enumtext: {}", hwnd.GetWindowText().unwrap(),);
-
-                //active_window(&hwnd);
-                //bring_window(&hwnd);
-
-                *target_hwnd_lock = hwnd;
-                //*count_lock = 1;
-            }
+            *target_hwnd_lock = hwnd;
         }
-
-        //
-
-        //check_foreground_window();
-        //println!("true {}", hwnd.IsIconic());
         true
     });
 
-    //let default_ime = w::HWND::FindWindowEx(&self, hwnd_child_after, class_name, title)
-
+    // データの加工
     let hwnd_lock = target_hwnd.lock().unwrap();
-
     let hwnd = &*hwnd_lock;
-    check_foreground_window();
-    println!(
-        "setforeground_target_text: {}",
-        hwnd.GetWindowText().unwrap()
-    );
 
-    active_window(hwnd);
-    bring_window(hwnd);
-
-    check_foreground_window();
-
-    let _ = w::EnumWindows(|hwnd| -> bool {
-        //check_foreground_window();
-
-        true
-    });
+    // 選択状態に変更
+    focus_window(hwnd);
+    // トップ画面へ
+    bring_window_to_top(hwnd);
 }
 
-fn check_foreground_window() {
-    match w::HWND::GetForegroundWindow() {
-        Some(foreground_hwnd) => match foreground_hwnd.GetWindowText() {
-            Ok(text) => {
-                println!("title: {}", text)
-            }
-            Err(_) => {}
-        },
-        None => {}
-    }
-}
+/// [`w::HWND`]にフォーカスさせる
+fn focus_window(hwnd: &w::HWND) {
+    if let Some(foreground_hwnd) = w::HWND::GetForegroundWindow() {
+        let _ = w::AttachThreadInput(
+            hwnd.GetWindowThreadProcessId().0,
+            foreground_hwnd.GetWindowThreadProcessId().0,
+            true,
+        );
 
-fn active_window(hwnd: &w::HWND) {
-    match w::HWND::GetForegroundWindow() {
-        Some(foreground_hwnd) => {
-            println!("test {}", foreground_hwnd.GetWindowThreadProcessId().1);
-            let result = AttachThreadInput(
-                hwnd.GetWindowThreadProcessId().0,
-                foreground_hwnd.GetWindowThreadProcessId().0,
-                true,
-            );
-            match result {
-                Ok(_) => {
-                    println!("atok");
-                }
-                Err(_) => {
-                    println!("atno");
-                }
-            }
+        //let _ = AllowSetForegroundWindow(Some(ASFW_ANY));
 
-            let result = AllowSetForegroundWindow(Some(ASFW_ANY));
-            match result {
-                Ok(_) => {
-                    println!("tok");
-                }
-                Err(_) => {
-                    println!("no");
-                }
-            }
-
-            let result = hwnd.SetForegroundWindow();
-            match w::HWND::GetForegroundWindow() {
-                Some(foreground_hwnd) => match foreground_hwnd.GetWindowText() {
-                    Ok(text) => {
-                        if hwnd.GetWindowText().unwrap() != text {
-                            println!("more f:{}, n:{}", text, hwnd.GetWindowText().unwrap());
-                            active_window(hwnd);
-                        }
-                    }
-                    Err(_) => {}
-                },
-                None => {}
-            }
-
-            //hwnd.SetFocus();
-            //let _ = hwnd.SetActiveWindow();
-            println!("result: {}", result);
-            let result = AttachThreadInput(
-                hwnd.GetWindowThreadProcessId().0,
-                foreground_hwnd.GetWindowThreadProcessId().0,
-                false,
-            );
-            match result {
-                Ok(_) => {
-                    println!("afok");
-                }
-                Err(_) => {
-                    println!("afno");
+        hwnd.SetForegroundWindow();
+        // 設定できていない場合は再帰的に行う
+        if let Some(changed_foreground_hwnd) = w::HWND::GetForegroundWindow() {
+            if let Ok(text) = changed_foreground_hwnd.GetWindowText() {
+                if hwnd.GetWindowText().unwrap() != text {
+                    focus_window(hwnd);
                 }
             }
         }
-        None => {}
+
+        let _ = w::AttachThreadInput(
+            hwnd.GetWindowThreadProcessId().0,
+            foreground_hwnd.GetWindowThreadProcessId().0,
+            false,
+        );
     }
 }
 
-fn bring_window(hwnd: &w::HWND) {
+/// 選択したWindowをTopに持ってくる
+fn bring_window_to_top(hwnd: &w::HWND) {
     if hwnd.IsIconic() {
         hwnd.ShowWindow(SW::RESTORE);
     }
@@ -172,41 +74,3 @@ fn bring_window(hwnd: &w::HWND) {
         SWP::NOSIZE | SWP::NOMOVE,
     );
 }
-
-// unsafe extern "system" fn enum_window(hwnd: HWND, _: LPARAM) -> BOOL {
-//     if !is_visiable_window(hwnd) {
-//         return TRUE;
-//     }
-
-//     TRUE
-// }
-
-fn is_visiable_window(hwnd: HWND) -> bool {
-    unsafe {
-        let mut text: [u16; 512] = [0; 512];
-        let len = GetWindowTextW(hwnd, &mut text);
-        let text = String::from_utf16_lossy(&text[..len as usize]);
-
-        !text.is_empty()
-    }
-}
-
-fn focus_hwnd(hwnd: HWND) {}
-
-// fn get_exe_from_hwnd(hwnd: HWND) -> Option<String> {
-//     unsafe {
-//         let mut process_id = 0;
-//         GetWindowThreadProcessId(hwnd, Some(&mut process_id));
-
-//         let h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process_id).unwrap();
-
-//         let mut file_name: [u16; 512] = [0; 512];
-//         let size = GetModuleFileNameExW(h_process, None, &mut file_name);
-//         let file_name = String::from_utf16_lossy(&file_name[..size as usize]);
-//         println!("filename: {}", file_name);
-
-//         Some(file_name.to_string())
-//     }
-// }
-
-pub fn focus_window() {}

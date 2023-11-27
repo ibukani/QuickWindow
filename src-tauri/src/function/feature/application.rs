@@ -21,13 +21,12 @@ pub fn run_application(file_path: &&str) {
         v.exe() == Path::new(file_path)
     }) {
         // 多重起動防止
-        Some((pid, process)) => {
-            focus_window();
-            run_window(pid.as_u32());
+        Some((pid, _process)) => {
+            switch_window(pid.as_u32());
         }
         // 起動処理
         None => {
-            focus_window();
+            start_window();
         }
     };
 }
