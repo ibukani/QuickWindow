@@ -7,7 +7,6 @@ use w::co::{HWND_PLACE, SW, SWP};
 use winsafe::{self as w, prelude::*};
 
 pub fn start_window(exe_file_path: &&str) {
-    println!("{}", exe_file_path);
     Command::new("cmd")
         .args(["/C", "start", "", exe_file_path])
         .status()
