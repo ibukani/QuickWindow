@@ -2,6 +2,7 @@ pub mod feature;
 
 use feature::Feature;
 
+#[derive(Clone)]
 pub struct Function {
     feature: Feature,
 }
@@ -15,4 +16,3 @@ impl Function {
         self.feature.execute()
     }
 }
-

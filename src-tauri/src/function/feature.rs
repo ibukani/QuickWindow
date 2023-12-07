@@ -1,5 +1,6 @@
 pub mod application;
 
+#[derive(Clone)]
 pub enum Feature {
     Application { file_path: &'static str },
     Sentence(),
@@ -7,10 +8,8 @@ pub enum Feature {
 
 impl Feature {
     pub fn execute(&self) {
-        println!("debug a");
         match self {
             Feature::Application { file_path } => {
-                println!("debug b");
                 application::run_application(file_path);
             }
             _ => {}
