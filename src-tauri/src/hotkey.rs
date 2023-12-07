@@ -1,9 +1,5 @@
 use async_std::task::JoinHandle;
 use inputbot::KeybdKey::*;
-use std::{
-    sync::{Arc, Mutex},
-    time::Instant,
-};
 
 use crate::function::{feature::Feature, Function};
 
@@ -22,15 +18,16 @@ impl InputManager {
 
     pub fn init(&mut self) {
         self.read_task = Some(async_std::task::spawn(async {
-            DobuleTapMacro::new(LShiftKey, Function::new(Feature::Application {
+            DobuleTapMacro::new(RShiftKey, Function::new(Feature::Application {
                 file_path: "C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminal_1.18.2822.0_x64__8wekyb3d8bbwe\\WindowsTerminal.exe",
-            }));
+            })).bind();
             DobuleTapMacro::new(
-                LControlKey,
+                RControlKey,
                 Function::new(Feature::Application {
                     file_path: "C:\\Program Files\\Notepad++\\notepad++.exe",
                 }),
-            );
+            )
+            .bind();
 
             inputbot::handle_input_events();
             true

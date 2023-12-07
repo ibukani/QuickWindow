@@ -16,7 +16,6 @@ pub fn run_application(file_path: &&str) {
         if !v.exe().is_file() {
             return false;
         }
-        println!("bool: {}", v.exe() == Path::new(file_path));
 
         v.exe() == Path::new(file_path)
     }) {
@@ -26,7 +25,7 @@ pub fn run_application(file_path: &&str) {
         }
         // 起動処理
         None => {
-            start_window();
+            start_window(file_path);
         }
     };
 }
