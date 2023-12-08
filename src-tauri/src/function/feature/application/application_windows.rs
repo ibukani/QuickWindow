@@ -33,7 +33,7 @@ pub fn switch_window(pid: u32) {
     focus_window(hwnd);
     // トップ画面へ
     // focus_windowで処理が完結する
-    //bring_window_to_top(hwnd);
+    bring_window_to_top(hwnd);
 }
 
 /// [`w::HWND`]にフォーカスさせる
@@ -67,7 +67,7 @@ fn focus_window(hwnd: &w::HWND) {
 
 /// 選択したWindowをTopに持ってくる
 /// 必要なさそう
-fn _bring_window_to_top(hwnd: &w::HWND) {
+fn bring_window_to_top(hwnd: &w::HWND) {
     if hwnd.IsIconic() {
         hwnd.ShowWindow(SW::RESTORE);
     }
