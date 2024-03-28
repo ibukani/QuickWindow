@@ -1,9 +1,17 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    process::Command,
+    sync::{Arc, Mutex},
+};
 
 use w::co::{HWND_PLACE, SW, SWP};
 use winsafe::{self as w, prelude::*};
 
-pub fn start_window() {}
+pub fn start_window(exe_file_path: &&str) {
+    Command::new("cmd")
+        .args(["/C", "start", "", exe_file_path])
+        .status()
+        .expect("failed to execute start");
+}
 
 pub fn switch_window(pid: u32) {
     let target_hwnd = Arc::new(Mutex::new(w::HWND::NULL));
@@ -24,6 +32,7 @@ pub fn switch_window(pid: u32) {
     // 選択状態に変更
     focus_window(hwnd);
     // トップ画面へ
+    // focus_windowで処理が完結する
     bring_window_to_top(hwnd);
 }
 
@@ -57,6 +66,7 @@ fn focus_window(hwnd: &w::HWND) {
 }
 
 /// 選択したWindowをTopに持ってくる
+/// 必要なさそう
 fn bring_window_to_top(hwnd: &w::HWND) {
     if hwnd.IsIconic() {
         hwnd.ShowWindow(SW::RESTORE);
