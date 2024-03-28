@@ -9,9 +9,11 @@ use tauri::SystemTray;
 
 fn main() {
     println!("build ing");
+    // setup Shortcut key system
     let mut manager = InputManager::new();
     manager.init();
 
+    // setup tauri
     let system_tray = SystemTray::new();
 
     tauri::Builder::default()
