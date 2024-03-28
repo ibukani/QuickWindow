@@ -9,6 +9,7 @@ use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayMenu};
 
 fn main() {
     println!("build ing");
+    // setup Shortcut key system
     let mut manager = InputManager::new();
     manager.init();
 
@@ -16,7 +17,8 @@ fn main() {
 
     let tray_menu = SystemTrayMenu::new().add_item(quit);
 
-    let system_tray = SystemTray::new().with_menu(tray_menu);
+    // setup tauri
+    let system_tray = SystemTray::new();
 
     tauri::Builder::default()
         .setup(|app| {
